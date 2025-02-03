@@ -15,6 +15,7 @@ typedef struct {
         GB_HUC3,
         GB_TPP1,
         GB_CAMERA,
+        GB_M161
     } mbc_type;
     bool has_ram;
     bool has_battery;

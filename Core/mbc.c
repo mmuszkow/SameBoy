@@ -40,12 +40,16 @@ const GB_cartridge_t GB_cart_defs[256] = {
     {  GB_NO_MBC, false, false, false, false}, // FDh  BANDAI TAMA5 (Todo: Not supported)
     {  GB_HUC3  , true , true , true,  false}, // FEh  HuC3
     {  GB_HUC1  , true , true , false, false}, // FFh  HuC1+RAM+BATTERY
+    [0xA1] =
+    {  GB_M161  , false, false, false, false}, // A1h  M161
 };
 
 void GB_update_mbc_mappings(GB_gameboy_t *gb)
 {
     switch (gb->cartridge_type->mbc_type) {
-        case GB_NO_MBC: return;
+        case GB_NO_MBC:
+        case GB_M161:
+            return;
         case GB_MBC1:
             switch (gb->mbc1_wiring) {
                 case GB_STANDARD_MBC1_WIRING:
@@ -164,6 +168,15 @@ void GB_configure_cart(GB_gameboy_t *gb)
         memmove(gb->rom, gb->rom + 0x8000, gb->rom_size - 0x8000);
         memcpy(gb->rom + gb->rom_size - 0x8000, temp, 0x8000);
         free(temp);
+    }
+    else if (gb->cartridge_type->mbc_type == GB_MBC3 &&
+             gb->cartridge_type->has_ram &&
+             gb->cartridge_type->has_rtc &&
+             gb->cartridge_type->has_battery &&
+             strncmp((const char*) &gb->rom[0x134], "TETRIS SET", 10) == 0) {
+        static const GB_cartridge_t m161 = {GB_M161, false, false, false, false};
+        gb->cartridge_type = &m161;
+        gb->mbc_rom0_bank = 0;
     }
     else {
         const GB_cartridge_t *maybe_mmm01_type = &GB_cart_defs[gb->rom[gb->rom_size - 0x8000 + 0x147]];

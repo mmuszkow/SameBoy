@@ -281,13 +281,18 @@ static uint8_t read_rom(GB_gameboy_t *gb, uint16_t addr)
     if (!gb->rom_size) {
         return 0xFF;
     }
-    unsigned effective_address = (addr & 0x3FFF) + gb->mbc_rom0_bank * 0x4000;
+
+    unsigned effective_address = (gb->cartridge_type->mbc_type == GB_M161) ?
+                                 (addr & 0x3FFF) + gb->mbc_rom0_bank * 0x8000 : 
+                                 (addr & 0x3FFF) + gb->mbc_rom0_bank * 0x4000;
     return gb->rom[effective_address & (gb->rom_size - 1)];
 }
 
 static uint8_t read_mbc_rom(GB_gameboy_t *gb, uint16_t addr)
 {
-    unsigned effective_address = (addr & 0x3FFF) + gb->mbc_rom_bank * 0x4000;
+    unsigned effective_address = (gb->cartridge_type->mbc_type == GB_M161) ?
+                                 (addr & 0x3FFF) + 0x4000 + gb->mbc_rom0_bank * 0x8000 : 
+                                 (addr & 0x3FFF) + gb->mbc_rom_bank * 0x4000;
     return gb->rom[effective_address & (gb->rom_size - 1)];
 }
 
@@ -999,6 +1004,10 @@ static void write_mbc(GB_gameboy_t *gb, uint16_t addr, uint8_t value)
                             break;
                     }
             }
+            break;
+        case GB_M161:
+            if (gb->mbc_rom0_bank == 0)
+                gb->mbc_rom0_bank = value & 0x7;
             break;
             nodefault;
     }
