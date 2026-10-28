@@ -9,6 +9,8 @@
 /* Band limited synthesis loosely based on: http://www.slack.net/~ant/bl-synth/ */
 static int32_t band_limited_steps[GB_BAND_LIMITED_PHASES][GB_BAND_LIMITED_WIDTH];
 
+static FILE *snd_log_file = NULL;
+
 static void __attribute__((constructor)) band_limited_init(void)
 {
     const unsigned master_size = GB_BAND_LIMITED_WIDTH * GB_BAND_LIMITED_PHASES;
@@ -1092,6 +1094,12 @@ void GB_apu_init(GB_gameboy_t *gb)
     }
     gb->apu.square_channels[GB_SQUARE_1].sample_countdown = -1;
     gb->apu.square_channels[GB_SQUARE_2].sample_countdown = -1;
+
+    if (!snd_log_file) {
+        snd_log_file = fopen("/tmp/sameboy-snd.txt", "w");
+        if (!snd_log_file)
+            puts("Failed to open audio dump file");
+    }
 }
 
 uint8_t GB_apu_read(GB_gameboy_t *gb, uint8_t reg)
@@ -1698,6 +1706,11 @@ void GB_apu_write(GB_gameboy_t *gb, uint8_t reg, uint8_t value)
             return;
         }
         reg = GB_IO_WAV_START + gb->apu.wave_channel.current_sample_index / 2;
+    }
+
+    if (snd_log_file) {
+        fprintf(snd_log_file, "%llu:%02X=%02X\n", gb->total_cycles, reg, value);
+        fflush(snd_log_file);
     }
 
     /* Todo: this can and should be rewritten with a function table. */

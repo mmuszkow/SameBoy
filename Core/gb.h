@@ -547,6 +547,7 @@ struct GB_gameboy_internal_s {
         uint8_t joyp_switching_delay;
         uint8_t joyp_switch_value;
         uint16_t key_bounce_timing[GB_KEY_MAX];
+        uint64_t total_cycles;
     )
 
     /* APU */

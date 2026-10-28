@@ -495,7 +495,8 @@ void GB_advance_cycles(GB_gameboy_t *gb, uint8_t cycles)
             gb->halted = false;
         }
     }
-        
+
+    gb->total_cycles += cycles;
 #ifndef GB_DISABLE_DEBUGGER
     gb->debugger_ticks += cycles;
 #endif

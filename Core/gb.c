@@ -1790,7 +1790,8 @@ static void GB_reset_internal(GB_gameboy_t *gb, bool quick)
         gb->io_registers[GB_IO_OBP1] = preserved_state->obp1;
     }
     gb->apu.apu_cycles_in_2mhz = true;
-    
+    gb->total_cycles = 0;
+
     gb->magic = GB_state_magic();
     request_boot_rom(gb);
     GB_rewind_push(gb);
